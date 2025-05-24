@@ -1,26 +1,71 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-  <meta charset="utf-8">
-  <title>Truy xuất nguồn gốc</title>
+  <meta charset="UTF-8">
+  <title>Truy xuất sản phẩm</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; }
+    input, button { padding: 10px; font-size: 16px; width: 100%; margin-bottom: 10px; }
+    pre { background: #f7f7f7; padding: 15px; white-space: pre-wrap; }
+  </style>
 </head>
 <body>
-  <h2>🔍 Truy xuất sản phẩm</h2>
-  <input id="productId" placeholder="Nhập mã sản phẩm hoặc quét QR">
+
+  <h2>🔍 Truy xuất nguồn gốc sản phẩm</h2>
+  <input id="productId" placeholder="Nhập mã sản phẩm (hoặc quét QR)">
   <button onclick="truyXuat()">Truy xuất</button>
   <pre id="ketQua"></pre>
 
-  <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
-  <script src="app.js"></script>
+  <!-- ✅ ethers.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
   <script>
+    const CONTRACT_ADDRESS = "0xe762b6E85fb489683cA800Cc610Ae5Ca67d46C61";
+
+    const ABI = [
+      {
+        "inputs": [
+          { "internalType": "string", "name": "id", "type": "string" }
+        ],
+        "name": "getProduct",
+        "outputs": [
+          { "internalType": "string", "name": "rawMaterial", "type": "string" },
+          { "internalType": "string", "name": "manufacturer", "type": "string" },
+          { "internalType": "string", "name": "packageInfo", "type": "string" },
+          { "internalType": "string", "name": "distributor", "type": "string" }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ];
+
+    async function truyXuat() {
+      const id = document.getElementById("productId").value;
+      try {
+        const provider = new ethers.providers.JsonRpcProvider("https://data-seed-prebsc-1-s1.binance.org:8545/");
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+        const data = await contract.getProduct(id);
+        document.getElementById("ketQua").textContent = `
+🧪 Nguyên liệu: ${data.rawMaterial}
+🏭 Nhà sản xuất: ${data.manufacturer}
+📦 Quy cách: ${data.packageInfo}
+🚚 Phân phối: ${data.distributor}
+        `;
+      } catch (err) {
+        document.getElementById("ketQua").textContent = "Không tìm thấy sản phẩm hoặc lỗi kết nối.";
+      }
+    }
+
+    // ✅ Tự động truy xuất khi có tham số ?productId=
     window.onload = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const id = urlParams.get('productId');
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('productId');
       if (id) {
-        document.getElementById('productId').value = id;
-        truyXuat(); // Tự động gọi truy xuất nếu có productId trong URL
+        document.getElementById("productId").value = id;
+        truyXuat();
       }
     };
   </script>
+
 </body>
 </html>
