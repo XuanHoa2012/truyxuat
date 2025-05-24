@@ -42,7 +42,7 @@
     async function truyXuat() {
       const id = document.getElementById("productId").value;
       try {
-        const provider = new ethers.providers.JsonRpcProvider("https://data-seed-prebsc-1-s1.binance.org:8545/");
+        const provider = new ethers.providers.JsonRpcProvider("https://bsc-testnet.publicnode.com");
         const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
         const data = await contract.getProduct(id);
         document.getElementById("ketQua").textContent = `
